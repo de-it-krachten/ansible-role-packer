@@ -444,7 +444,7 @@ platforms:
     supported: true
     galaxy:
       name: opensuse
-      version: all
+      version: 15
 #    molecule:
 #      docker:
 #        image: "robertdebock/opensuse"
@@ -467,7 +467,7 @@ platforms:
     supported: true
     galaxy:
       name: opensuse
-      version: all
+      version: 15
     molecule:
       docker:
         image: "docker.io/geerlingguy/docker-opensuseleap15-ansible:latest"
@@ -490,7 +490,7 @@ platforms:
     supported: false
     galaxy:
       name: opensuse
-      version: all
+      version: 15
     molecule:
       docker:
         image: "robertdebock/opensuse"
@@ -723,7 +723,7 @@ platforms:
     supported: false
     galaxy:
       name: Fedora
-      version: all
+      version: 37
     molecule:
       docker:
         image: "docker.io/geerlingguy/docker-fedora37-ansible:latest"
@@ -748,7 +748,7 @@ platforms:
     supported: false
     galaxy:
       name: Fedora
-      version: all
+      version: 38
     molecule:
       docker:
         image: "docker.io/geerlingguy/docker-fedora38-ansible:latest"
@@ -773,7 +773,7 @@ platforms:
     supported: false
     galaxy:
       name: Fedora
-      version: all
+      version: 39
     molecule:
       docker:
         image: "docker.io/geerlingguy/docker-fedora39-ansible:latest"
@@ -798,7 +798,7 @@ platforms:
     supported: false
     galaxy:
       name: Fedora
-      version: all
+      version: 40
     molecule:
       docker:
         image: "docker.io/geerlingguy/docker-fedora40-ansible:latest"
@@ -823,7 +823,7 @@ platforms:
     supported: false
     galaxy:
       name: Fedora
-      version: all
+      version: 41
     molecule:
       docker:
         image: "docker.io/geerlingguy/docker-fedora41-ansible:latest"
@@ -848,7 +848,7 @@ platforms:
     supported: true
     galaxy:
       name: Fedora
-      version: all
+      version: 42
     molecule:
       docker:
         image: "docker.io/geerlingguy/docker-fedora42-ansible:latest"
@@ -873,7 +873,7 @@ platforms:
     supported: true
     galaxy:
       name: Fedora
-      version: all
+      version: 43
     molecule:
       docker:
         image: "docker.io/geerlingguy/docker-fedora43-ansible:latest"
@@ -939,7 +939,7 @@ platforms:
     supported: false
     galaxy:
       name: Windows
-      version: all
+      version: 2012R2
     molecule:
       vagrant:
         box: jborean93/WindowsServer2012R2
@@ -954,7 +954,7 @@ platforms:
     supported: false
     galaxy:
       name: Windows
-      version: all
+      version: 2016
     molecule:
       vagrant:
         box: jborean93/WindowsServer2016
@@ -969,7 +969,7 @@ platforms:
     supported: false
     galaxy:
       name: Windows
-      version: all
+      version: 2019
     molecule:
       vagrant:
         box: jborean93/WindowsServer2019
@@ -984,7 +984,7 @@ platforms:
     supported: false
     galaxy:
       name: Windows
-      version: all
+      version: 2022
     molecule:
       vagrant:
         box: jborean93/WindowsServer2022
@@ -999,7 +999,7 @@ platforms:
     supported: false
     galaxy:
       name: Windows
-      version: all
+      version: 2025
     molecule:
       vagrant:
         box: jborean93/WindowsServer2025

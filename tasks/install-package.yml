@@ -69,6 +69,6 @@
 
 - name: Install the package
   ansible.builtin.package:
-    name: "{{ packer_product }}"
+    name: "{{ packer_packages }}"
     state: present
   become: true

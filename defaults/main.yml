@@ -1,7 +1,8 @@
 ---
 
-# product name
-packer_product: "{{ role_name | regex_replace('deitkrachten\\.') }}"
+# Packer OS packages
+packer_packages:
+  - packer
 
 # product platform
 packer_platform: "{{ ansible_system | lower }}"

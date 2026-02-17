@@ -37,11 +37,13 @@ Supported platforms
 Note:
 <sup>1</sup> : no automated testing is performed on these platforms
 
+
 ## Role Variables
 ### defaults/main.yml
 <pre><code>
-# product name
-packer_product: "{{ role_name | regex_replace('deitkrachten\\.') }}"
+# Packer OS packages
+packer_packages:
+  - packer
 
 # product platform
 packer_platform: "{{ ansible_system | lower }}"
@@ -59,6 +61,12 @@ packer_zip: >-
 # product download url
 packer_product_url: >-
   https://releases.hashicorp.com/packer/{{ packer_version }}/{{ packer_zip }}
+
+# List of packer plugin to install
+packer_plugins: []
+
+# Execute packer build phase
+packer_build: false
 </pre></code>
 
 
