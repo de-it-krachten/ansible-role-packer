@@ -2,10 +2,10 @@
 
 # Generic
 generic:
-  role: ansible-role-hashicorp
-  role_short: hashicorp
+  role: ansible-role-packer
+  role_short: packer
   role_description: |
-    Install hashicorp products 
+    Install hashicorp packer
 
 platforms:
   rhel10:
@@ -29,12 +29,3 @@ platforms:
   debian13:
     ci: false
     supported: false
-
-molecule:
-  converge:
-    vars:
-      hashicorp_product: vagrant
-
-ci_templates:
-  converge.yml:
-    force: false

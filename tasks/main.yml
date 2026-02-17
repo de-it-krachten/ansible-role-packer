@@ -1,4 +1,12 @@
 ---
 
 - name: Include install.yml
-  ansible.builtin.include_tasks: install-{{ hashicorp_install_mode }}.yml
+  ansible.builtin.include_tasks: install-{{ packer_install_mode }}.yml
+
+- name: Include install-plugin.yml
+  ansible.builtin.include_tasks: install-plugins.yml
+
+- name: Include build.yml
+  ansible.builtin.include_tasks: build.yml
+  when: packer_build | bool
+

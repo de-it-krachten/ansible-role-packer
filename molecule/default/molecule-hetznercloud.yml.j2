@@ -12,7 +12,7 @@ lint: |
   rm -f requirements.yml
 platforms:
 {% for platform in MOLECULE_DISTROS %}
-  - name: hashicorp-{{ platform.name }}-node1
+  - name: packer-{{ platform.name }}-node1
     server_type: "{{ platform.server_type | default('cx22') }}"
     image: "{{ platform.image }}"
     location: "{{ platform.location | default('hel1') }}"

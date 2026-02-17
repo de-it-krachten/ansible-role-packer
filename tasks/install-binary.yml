@@ -1,37 +1,37 @@
 ---
 
-- name: Use specific version {{ hashicorp_product }}
+- name: Use specific version {{ packer_product }}
   ansible.builtin.set_fact:
-    hashicorp_product_version: "{{ vars[hashicorp_product + '_version'] }}"
-  when: vars[hashicorp_product + '_version'] is defined
+    packer_product_version: "{{ vars[packer_product + '_version'] }}"
+  when: vars[packer_product + '_version'] is defined
 
 - name: Get version
-  when: vars[hashicorp_product + '_version'] is not defined
+  when: vars[packer_product + '_version'] is not defined
   block:
 
     - name: Get latest release of a public repository
       ansible.builtin.uri:
-        url: https://api.github.com/repos/hashicorp/{{ hashicorp_product }}/releases/latest
+        url: https://api.github.com/repos/hashicorp/{{ packer_product }}/releases/latest
       check_mode: no
-      register: hashicorp_product_release_latest
-      when: hashicorp_product in [ 'vault' ]
+      register: packer_product_release_latest
+      when: packer_product in [ 'vault' ]
 
     - name: Register the version only
       ansible.builtin.set_fact:
-        hashicorp_product_version: "{{ hashicorp_product_release_latest['json']['name'] | regex_replace('^v') }}"
-      when: hashicorp_product in [ 'vault' ]
+        packer_product_version: "{{ packer_product_release_latest['json']['name'] | regex_replace('^v') }}"
+      when: packer_product in [ 'vault' ]
 
     - name: Get latest release of a public repository
       ansible.builtin.uri:
-        url: https://checkpoint-api.hashicorp.com/v1/check/{{ hashicorp_product }}
+        url: https://checkpoint-api.hashicorp.com/v1/check/{{ packer_product }}
       check_mode: no
-      register: hashicorp_product_release_latest
-      when: hashicorp_product not in [ 'vault' ]
+      register: packer_product_release_latest
+      when: packer_product not in [ 'vault' ]
 
     - name: Register the version only
       ansible.builtin.set_fact:
-        hashicorp_product_version: "{{ hashicorp_product_release_latest['json']['current_version'] | regex_replace('^v') }}"
-      when: hashicorp_product not in [ 'vault' ]
+        packer_product_version: "{{ packer_product_release_latest['json']['current_version'] | regex_replace('^v') }}"
+      when: packer_product not in [ 'vault' ]
 
 - name: Install packages required to unpack
   ansible.builtin.package:
@@ -46,21 +46,21 @@
 
 - name: Download and unpack binary
   ansible.builtin.unarchive:
-    src: "{{ hashicorp_product_url }}"
+    src: "{{ packer_product_url }}"
     dest: "{{ __tmpdir.path }}"
     remote_src: yes
   changed_when: false
 
 - name: Copy binary to final location
   ansible.builtin.copy:
-    src: "{{ __tmpdir.path }}/{{ hashicorp_product }}"
-    dest: /usr/local/bin/{{ hashicorp_product }}
+    src: "{{ __tmpdir.path }}/{{ packer_product }}"
+    dest: /usr/local/bin/{{ packer_product }}
     mode: "0755"
     remote_src: yes
+  become: true
 
 - name: Delete temporary directory
   ansible.builtin.file:
     path: "{{ __tmpdir.path }}"
     state: absent
   changed_when: false
-

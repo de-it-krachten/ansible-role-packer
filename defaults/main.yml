@@ -1,21 +1,28 @@
 ---
 
-# product name
-hashicorp_product: "{{ role_name | regex_replace('deitkrachten\\.') }}"
+# Packer OS packages
+packer_packages:
+  - packer
 
 # product platform
-hashicorp_platform: "{{ ansible_system | lower }}"
+packer_platform: "{{ ansible_system | lower }}"
 
 # product architecture
-hashicorp_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else ansible_architecture }}"
+packer_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else ansible_architecture }}"
 
 # product install mode (binary or package)
-hashicorp_install_mode: package
+packer_install_mode: package
 
 # product zip filename
-hashicorp_zip: >-
-  {{ hashicorp_product }}_{{ hashicorp_product_version }}_{{ hashicorp_platform }}_{{ hashicorp_arch }}.zip
+packer_zip: >-
+  packer_{{ packer_version }}_{{ packer_platform }}_{{ packer_arch }}.zip
 
 # product download url
-hashicorp_product_url: >-
-  https://releases.hashicorp.com/{{ hashicorp_product }}/{{ hashicorp_product_version }}/{{ hashicorp_zip }}
+packer_product_url: >-
+  https://releases.hashicorp.com/packer/{{ packer_version }}/{{ packer_zip }}
+
+# List of packer plugin to install
+packer_plugins: []
+
+# Execute packer build phase
+packer_build: false

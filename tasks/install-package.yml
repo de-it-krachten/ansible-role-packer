@@ -2,6 +2,7 @@
 
 - name: RedHat family
   when: ansible_os_family == 'RedHat'
+  become: true
   block:
 
     - name: Import the hashicorp GPG key (RPM)
@@ -26,6 +27,7 @@
 
 - name: Debian family
   when: ansible_os_family == 'Debian'
+  become: true
   block:
 
     - name: Download APT signing key
@@ -44,7 +46,6 @@
         state: present
         file: /tmp/hashicorp.gpg
         keyring: /etc/apt/trusted.gpg.d/hashicorp.gpg
-      become: yes
       when: ansible_distribution_major_version | int < 12
 
     - name: Copy APT signing key into the proper drop-in directory
@@ -65,9 +66,9 @@
           deb [arch=amd64,arm64 signed-by=/etc/apt/trusted.gpg.d/hashicorp.gpg] https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main
           {%- endif -%}
         state: present
-      become: yes
 
 - name: Install the package
   ansible.builtin.package:
-    name: "{{ hashicorp_product }}"
+    name: "{{ packer_packages }}"
     state: present
+  become: true
