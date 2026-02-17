@@ -1,3 +1,26 @@
+# 1.0.0 (2026-02-17)
+
+
+### Bug Fixes
+
+* Add missing state=absemt for obsolete APT repo file ([2f35fb8](https://github.com/de-it-krachten/ansible-role-packer/commit/2f35fb8ff4ddc0edbd58770a6b9860b8fd7842de))
+* fix repository setup ([d28d6fe](https://github.com/de-it-krachten/ansible-role-packer/commit/d28d6fe2433fc4470b9963f55b07c08b13ff958f))
+* Hashicorp GPG key is moved due to deprecation warning ([c82a683](https://github.com/de-it-krachten/ansible-role-packer/commit/c82a683f0fe11ca55ca557146db61d1212971dee))
+* Remove initial support for SLES/OpenSUSE ([53d6f31](https://github.com/de-it-krachten/ansible-role-packer/commit/53d6f31eee7bc66c9e3cb1f03c67addd6be14d3a))
+
+
+### Features
+
+* Add support for packer builds ([41d2d4d](https://github.com/de-it-krachten/ansible-role-packer/commit/41d2d4d1a412e42500b867d83fb725ce886574e6))
+* Add support for plugins ([90dbdd9](https://github.com/de-it-krachten/ansible-role-packer/commit/90dbdd9c61bb226e03df870abe13ccde9a443d0c))
+* Add support for Ubuntu 24.04 LTS + Fedora 40 ([d929569](https://github.com/de-it-krachten/ansible-role-packer/commit/d9295692155ba193295500b083304cb623b67370))
+* Implement ansible-lint v6 support ([c34ac9a](https://github.com/de-it-krachten/ansible-role-packer/commit/c34ac9a547b793e5c754cabe95f0eea9865135b3))
+* Initial release ([f9ddb93](https://github.com/de-it-krachten/ansible-role-packer/commit/f9ddb93ffd2689a3ec95c4a5fa5d1702078729ed))
+* Move to FQCN ([c22809d](https://github.com/de-it-krachten/ansible-role-packer/commit/c22809d2f4ead69a9dc412699e7a4d3057e804e5))
+* Update CI to latest standards ([ec54b70](https://github.com/de-it-krachten/ansible-role-packer/commit/ec54b70422b84e8b833c14ec3fb712b4a268d82c))
+* Update supported platforms & CI ([7949a3c](https://github.com/de-it-krachten/ansible-role-packer/commit/7949a3ced92d38e769626d403a521e57517fadf0))
+* Update supported platforms & CI ([9d6197a](https://github.com/de-it-krachten/ansible-role-packer/commit/9d6197adb50d66506c21df4ebc2660cfc99c6ab4))
+
 # [1.5.0](https://github.com/de-it-krachten/ansible-role-hashicorp/compare/v1.4.0...v1.5.0) (2025-08-11)
 
 
