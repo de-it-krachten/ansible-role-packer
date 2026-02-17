@@ -1,9 +1,9 @@
 ---
 
 galaxy_info:
-  role_name: hashicorp
+  role_name: packer
   namespace: de_it_krachten
-  description: hashicorp
+  description: packer
   author: Mark van Huijstee
   company: De IT Krachten BV
   license: MIT

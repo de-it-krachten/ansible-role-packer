@@ -1,0 +1,129 @@
+---
+
+- name: Delete existing build directory
+  ansible.builtin.file:
+    path: "{{ packer_build_path }}"
+    state: absent
+
+- name: Create build location
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0750"
+  loop:
+    - "{{ packer_build_path }}"
+    - "{{ packer_build_path }}/vm"
+
+- name: Buildhost if localhost
+  when: inventory_hostname == 'localhost'
+  block:
+
+    - name: Create packer config in YAML
+      ansible.builtin.template:
+        src: "{{ packer_template }}"
+        dest: "{{ packer_build_path }}/{{ packer_image }}.yml"
+        block_start_string: "<%"
+        block_end_string: "%>"
+        variable_start_string: "<="
+        variable_end_string: "=>"
+        mode: "0644"
+
+    - name: Convert packer config to JSON
+      ansible.builtin.copy:
+        content: "{{ lookup('file', packer_build_path + '/' + packer_image + '.yml') | from_yaml | to_nice_json }}"
+        dest: "{{ packer_build_path }}/{{ packer_image }}.json"
+        mode: "0644"
+
+- name: Buildhost if localhost
+  when: inventory_hostname != 'localhost'
+  block:
+
+    - name: Create packer config in YAML
+      ansible.builtin.template:
+        src: "{{ packer_template }}"
+        dest: "/tmp/{{ packer_image }}.yml"
+        block_start_string: "<%"
+        block_end_string: "%>"
+        variable_start_string: "<="
+        variable_end_string: "=>"
+        mode: "0644"
+      delegate_to: localhost
+
+    - name: Convert packer config to JSON
+      ansible.builtin.copy:
+        content: "{{ lookup('file', '/tmp/' + packer_image + '.yml') | from_yaml | to_nice_json }}"
+        dest: "/tmp/{{ packer_image }}.json"
+        mode: "0644"
+      delegate_to: localhost
+
+    - name: Copy package files to buildhost
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "{{ packer_build_path }}/{{ item | basename }}"
+        mode: "0644"
+      loop:
+        - /tmp/{{ packer_image }}.yml
+        - /tmp/{{ packer_image }}.json
+
+- name: Copy extra files (RHEL)
+  ansible.builtin.copy:
+    src: /tmp/ks-{{ packer_image }}.cfg
+    dest: "{{ packer_build_path }}/ks.cfg"
+    mode: "0644"
+  when: packer_image is search('rhel')
+
+- name: Copy extra files (Ubuntu)
+  ansible.builtin.copy:
+    src: /tmp/user-data.{{ packer_image }}
+    dest: "{{ packer_build_path }}/user-data"
+    mode: "0644"
+  when: packer_image is search('ubuntu')
+
+- name: Create empty meta-data file (Ubuntu)
+  ansible.builtin.file:
+    path: "{{ packer_build_path }}/meta-data"
+    state: touch
+    mode: "0644"
+  when: packer_image is search('ubuntu')
+
+- name: Execute packer
+  ansible.builtin.shell:
+    cmd: |
+      set -e
+      export VBOX_USER_HOME="{{ packer_build_path }}/vm"
+      packer_config="{{ packer_image }}.json"
+      packer_log="{{ packer_image }}.log"
+      # PACKER_LOG=1 packer build -on-error=abort $packer_config > $packer_log 2>&1
+      packer build -on-error=abort $packer_config > $packer_log 2>&1
+  args:
+    chdir: "{{ packer_build_path }}"
+    executable: /bin/bash
+  changed_when: true
+  register: __packer
+
+- name: Retrieve logs
+  ansible.builtin.command:
+    cmd: cat {{ packer_build_path }}/{{ packer_image }}.log
+    chdir: "{{ packer_build_path }}"
+  changed_when: false
+  register: __build
+
+- name: Display logs
+  ansible.builtin.debug:
+    msg: "{{ __build.stdout_lines }}"
+
+- name: See detailed logging on the build server
+  ansible.builtin.debug:
+    msg:
+      host: "{{ packer_buildhost }}"
+      path: "{{ packer_build_path }}"
+
+- name: In case of failure, introduce pause of 4 hours
+  ansible.builtin.pause:
+    minutes: 240
+  when: __packer.rc > 0 and packer_debug | default(false) | bool
+
+- name: Stop processing
+  ansible.builtin.fail:
+    msg: Stopping image creation
+  when: __packer.rc > 0

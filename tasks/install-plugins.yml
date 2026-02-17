@@ -1,0 +1,20 @@
+---
+
+- name: Install packer plugins
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      venv={{ venv }}/bin/activate
+      [[ -f $venv ]] && source $venv
+      if ! packer plugins installed | grep -q "{{ item }}"
+      then
+        packer plugins install {{ item }} && exit 1 || exit 2
+      else
+        exit 0
+      fi
+  args:
+    executable: /bin/bash
+  register: __packer_plugin
+  changed_when: __packer_plugin.rc == 1
+  failed_when: __packer_plugin.rc == 2
+  loop: "{{ packer_plugins }}"

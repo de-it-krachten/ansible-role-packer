@@ -1,9 +1,9 @@
-[![CI](https://github.com/de-it-krachten/ansible-role-hashicorp/workflows/CI/badge.svg?event=push)](https://github.com/de-it-krachten/ansible-role-hashicorp/actions?query=workflow%3ACI)
+[![CI](https://github.com/de-it-krachten/ansible-role-packer/workflows/CI/badge.svg?event=push)](https://github.com/de-it-krachten/ansible-role-packer/actions?query=workflow%3ACI)
 
 
-# ansible-role-hashicorp
+# ansible-role-packer
 
-Install hashicorp products 
+Install hashicorp packer
 
 
 
@@ -31,8 +31,8 @@ Supported platforms
 - Debian 12 (Bookworm)
 - Ubuntu 22.04 LTS
 - Ubuntu 24.04 LTS
-- Fedora 41
 - Fedora 42
+- Fedora 43
 
 Note:
 <sup>1</sup> : no automated testing is performed on these platforms
@@ -41,24 +41,24 @@ Note:
 ### defaults/main.yml
 <pre><code>
 # product name
-hashicorp_product: "{{ role_name | regex_replace('deitkrachten\\.') }}"
+packer_product: "{{ role_name | regex_replace('deitkrachten\\.') }}"
 
 # product platform
-hashicorp_platform: "{{ ansible_system | lower }}"
+packer_platform: "{{ ansible_system | lower }}"
 
 # product architecture
-hashicorp_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else ansible_architecture }}"
+packer_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else ansible_architecture }}"
 
 # product install mode (binary or package)
-hashicorp_install_mode: package
+packer_install_mode: package
 
 # product zip filename
-hashicorp_zip: >-
-  {{ hashicorp_product }}_{{ hashicorp_product_version }}_{{ hashicorp_platform }}_{{ hashicorp_arch }}.zip
+packer_zip: >-
+  packer_{{ packer_version }}_{{ packer_platform }}_{{ packer_arch }}.zip
 
 # product download url
-hashicorp_product_url: >-
-  https://releases.hashicorp.com/{{ hashicorp_product }}/{{ hashicorp_product_version }}/{{ hashicorp_zip }}
+packer_product_url: >-
+  https://releases.hashicorp.com/packer/{{ packer_version }}/{{ packer_zip }}
 </pre></code>
 
 
@@ -67,34 +67,11 @@ hashicorp_product_url: >-
 ## Example Playbook
 ### molecule/default/converge.yml
 <pre><code>
-- name: sample playbook for role 'hashicorp'
+- name: sample playbook for role 'packer'
   hosts: all
+  become: 'yes'
   tasks:
-    - name: Include role 'hashicorp' (package)
-      include_role:
-        name: hashicorp
-      vars:
-        hashicorp_product: '{{ item }}'
-      loop:
-        - terraform
-        - vagrant
-        - terraform
-        - packer
-        - consul
-        - vault
-        - nomad
-    - name: Include role 'hashicorp' (binary)
-      include_role:
-        name: hashicorp
-      vars:
-        hashicorp_product: '{{ item }}'
-        hashicorp_install_mode: binary
-      loop:
-        - terraform
-        - vagrant
-        - terraform
-        - packer
-        - consul
-        - vault
-        - nomad
+    - name: Include role 'packer'
+      ansible.builtin.include_role:
+        name: packer
 </pre></code>

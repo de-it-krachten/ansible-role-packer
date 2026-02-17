@@ -1,4 +1,24 @@
 ---
+ansible:
+{% if ansible_navigator | default(false) | bool %}
+  executor:
+    backend: ansible-navigator
+    args:
+      ansible_navigator:
+        - --execution-environment-image=docker.io/dropveter/ee_rocky9_py311_ac216:latest
+  env:
+    ANSIBLE_INVENTORY: inventory/
+    ANSIBLE_COLLECTIONS_PATH: $COLLECTIONS_PATH
+{% endif %}
+  playbooks:
+    custom: custom.yml
+    create: create.yml
+    destroy: destroy.yml
+    converge: converge.yml
+    prepare: prepare.yml
+    verify: verify.yml
+    cleanup: cleanup.yml
+    side_effect: side_effect.yml
 
 dependency:
   name: galaxy
@@ -12,7 +32,7 @@ lint: |
   rm -f requirements.yml
 platforms:
 {% for platform in MOLECULE_DISTROS %}
-  - name: hashicorp-{{ platform.name }}-node1
+  - name: packer-{{ platform.name }}-node1
     image: "{{ platform.image }}"
 {% if platform.kernel_memory is defined %}
     kernel_memory: {{ platform.kernel_memory }}
@@ -35,7 +55,7 @@ platforms:
 {% if platform.networks is defined %}
     networks:
 {% for network in platform.networks %}
-      - name: hashicorp-{{ network }}
+      - name: packer-{{ network }}
 {% endfor %}
 {% endif %}
 {% if platform.ports is defined %}
