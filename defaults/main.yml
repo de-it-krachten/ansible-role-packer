@@ -5,10 +5,10 @@ packer_packages:
   - packer
 
 # product platform
-packer_platform: "{{ ansible_system | lower }}"
+packer_platform: "{{ ansible_facts.system | lower }}"
 
 # product architecture
-packer_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else ansible_architecture }}"
+packer_arch: "{{ 'amd64' if ansible_facts.architecture == 'x86_64' else ansible_facts.architecture }}"
 
 # product install mode (binary or package)
 packer_install_mode: package
