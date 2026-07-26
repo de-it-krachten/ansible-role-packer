@@ -31,8 +31,9 @@ Supported platforms
 - Debian 12 (Bookworm)
 - Ubuntu 22.04 LTS
 - Ubuntu 24.04 LTS
-- Fedora 42
+- Ubuntu 26.04 LTS
 - Fedora 43
+- Fedora 44<sup>1</sup>
 
 Note:
 <sup>1</sup> : no automated testing is performed on these platforms
@@ -46,10 +47,10 @@ packer_packages:
   - packer
 
 # product platform
-packer_platform: "{{ ansible_system | lower }}"
+packer_platform: "{{ ansible_facts.system | lower }}"
 
 # product architecture
-packer_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else ansible_architecture }}"
+packer_arch: "{{ 'amd64' if ansible_facts.architecture == 'x86_64' else ansible_facts.architecture }}"
 
 # product install mode (binary or package)
 packer_install_mode: package

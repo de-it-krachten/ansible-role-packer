@@ -1,20 +1,15 @@
 ---
 
+- name: Get list of installed plugins
+  ansible.builtin.command:
+    cmd: packer plugins installed
+  changed_when: false
+  register: __packager_plugins_installed
+
 - name: Install packer plugins
-  ansible.builtin.shell:
-    cmd: |
-      set -o pipefail
-      venv={{ venv }}/bin/activate
-      [[ -f $venv ]] && source $venv
-      if ! packer plugins installed | grep -q "{{ item }}"
-      then
-        packer plugins install {{ item }} && exit 1 || exit 2
-      else
-        exit 0
-      fi
-  args:
-    executable: /bin/bash
+  ansible.builtin.command:
+    cmd: packer plugins install {{ item }}
   register: __packer_plugin
-  changed_when: __packer_plugin.rc == 1
-  failed_when: __packer_plugin.rc == 2
+  changed_when: true
+  when: __packager_plugins_installed.stdout is not search(item)
   loop: "{{ packer_plugins }}"
