@@ -1,3 +1,18 @@
+# [1.1.0](https://github.com/de-it-krachten/ansible-role-packer/compare/v1.0.0...v1.1.0) (2026-07-26)
+
+
+### Bug Fixes
+
+* Improve package plugin installation ([fb71fb3](https://github.com/de-it-krachten/ansible-role-packer/commit/fb71fb3cead220071ccbc5dcf71be66e57d93c7b))
+
+
+### Features
+
+* Add support for ansible-core 2.20+ ([1455ef8](https://github.com/de-it-krachten/ansible-role-packer/commit/1455ef8abd2540087bfc3b0b20262fafc6286a97))
+* Added support for Fedora 44 ([16cf4c3](https://github.com/de-it-krachten/ansible-role-packer/commit/16cf4c34032a33bc75b58d16b42f0168397e661d))
+* Added support for Ubuntu 26.04 LTS ([2a31675](https://github.com/de-it-krachten/ansible-role-packer/commit/2a31675a5ca6c8b0a0afe3d402b39d68ec7a35e1))
+* Drop support for Fedora 42 ([88a3725](https://github.com/de-it-krachten/ansible-role-packer/commit/88a3725f8d1007187785842f345319a0f3740367))
+
 # 1.0.0 (2026-02-17)
 
 
