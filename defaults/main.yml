@@ -26,3 +26,9 @@ packer_plugins: []
 
 # Execute packer build phase
 packer_build: false
+
+# Destroy already existing VM (clean start)
+packer_vm_destroy: true
+
+# Virtual environment with the required ansible version
+# packer_ansible_venv: /usr/local/venv/ansiblecore216
