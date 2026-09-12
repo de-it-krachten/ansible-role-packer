@@ -37,14 +37,17 @@
 
     - name: Delete VM
       ansible.builtin.command:
-        cmd: VBoxManage unregistervm ubuntu2404 --delete
+        cmd: VBoxManage unregistervm {{ packer_image }} --delete
       become: false
       failed_when: false
 
-    - name: Delete existing build directory
+    - name: Delete existing build directories
       ansible.builtin.file:
-        path: "{{ packer_build_path }}"
+        path: "{{ item }}"
         state: absent
+      loop:
+        - "{{ packer_build_path }}"
+        - "{{ ansible_facts['user_dir'] }}/VirtualBox VMs/{{ packer_image }}"
 
 - name: Create build location
   ansible.builtin.file:
