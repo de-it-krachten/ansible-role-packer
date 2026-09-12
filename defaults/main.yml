@@ -24,6 +24,9 @@ packer_product_url: >-
 # List of packer plugin to install
 packer_plugins: []
 
+# User to install plugins for
+packer_plugins_user: root
+
 # Execute packer build phase
 packer_build: false
 

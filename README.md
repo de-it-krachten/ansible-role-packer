@@ -13,7 +13,7 @@ Install hashicorp packer
 None
 
 #### Collections
-None
+- community.general
 
 ## Platforms
 
@@ -66,8 +66,17 @@ packer_product_url: >-
 # List of packer plugin to install
 packer_plugins: []
 
+# User to install plugins for
+packer_plugins_user: root
+
 # Execute packer build phase
 packer_build: false
+
+# Destroy already existing VM (clean start)
+packer_vm_destroy: true
+
+# Virtual environment with the required ansible version
+# packer_ansible_venv: /usr/local/venv/ansiblecore216
 </pre></code>
 
 
