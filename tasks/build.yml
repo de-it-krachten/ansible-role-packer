@@ -1,53 +1,103 @@
 ---
 
-- name: Check VM state
-  ansible.builtin.shell:
-    cmd: |
-      VBoxManage showvminfo {{ packer_image }} --machinereadable | \
-      awk -F= '$1=="VMState" {print $2}' | sed "s/\"//g"
-  become: false
-  register: vm_info
-  changed_when: false
-
-- name: Shutdown VM
-  when: not packer_vm_destroy | bool
+- name: vSphere
+  when: packer_hypervisor == 'vsphere'
   block:
 
-    - name: Shutdown VM
-      ansible.builtin.command:
-        cmd: VBoxManage controlvm {{ packer_image }} acpipowerbutton
-      become: false
-      register: vbox_shutdown
-      when: vm_info.stdout != 'poweroff' and vm_info.stdout != ''
+    - name: Get VMs
+      community.vmware.vmware_vm_info:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: false
+      register: vm_list
 
-    - name: Wait for shutdown
-      ansible.builtin.pause:
-        seconds: 10
-      when: vm_info.stdout != 'poweroff' and vm_info.stdout != ''
+    - name: Set fact
+      ansible.builtin.set_fact:
+        found_vm: "{{ vm_list.virtual_machines | selectattr('guest_name', 'equalto', packer_image) | list }}"
 
-- name: Delete VM
-  when: packer_vm_destroy | bool
-  block:
-
-    - name: Shutdown VM
-      ansible.builtin.command:
-        cmd: VBoxManage controlvm {{ packer_image }} poweroff
-      become: false
-      failed_when: false
+    - name: Graceful shutdown if powered on
+      community.vmware.vmware_guest_powerstate:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: false
+        name: "{{ packer_image }}"
+        state: shutdown-guest
+        state_change_timeout: 120
+      when: found_vm | length > 0 and found_vm[0].power_state == 'poweredOn'
 
     - name: Delete VM
-      ansible.builtin.command:
-        cmd: VBoxManage unregistervm {{ packer_image }} --delete
-      become: false
-      failed_when: false
-
-    - name: Delete existing build directories
-      ansible.builtin.file:
-        path: "{{ item }}"
+      community.vmware.vmware_guest:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: false
+        name: "{{ packer_image }}"
         state: absent
-      loop:
-        - "{{ packer_build_path }}"
-        - "{{ ansible_facts['user_dir'] }}/VirtualBox VMs/{{ packer_image }}"
+        force: true
+      when: found_vm | length > 0
+
+- name: Virtualbox
+  when: packer_hypervisor == 'virtualbox'
+  block:
+
+    - name: Check VM state
+      ansible.builtin.shell:
+        cmd: |
+          VBoxManage showvminfo {{ packer_image }} --machinereadable | \
+          awk -F= '$1=="VMState" {print $2}' | sed "s/\"//g"
+      become: false
+      register: vm_info
+      changed_when: false
+
+    - name: Shutdown VM
+      when: not packer_vm_destroy | bool
+      block:
+
+        - name: Shutdown VM
+          ansible.builtin.command:
+            cmd: VBoxManage controlvm {{ packer_image }} acpipowerbutton
+          become: false
+          register: vbox_shutdown
+          when: vm_info.stdout != 'poweroff' and vm_info.stdout != ''
+
+        - name: Wait for shutdown
+          ansible.builtin.pause:
+            seconds: 10
+          when: vm_info.stdout != 'poweroff' and vm_info.stdout != ''
+
+    - name: Delete VM
+      when: packer_vm_destroy | bool
+      block:
+
+        - name: Shutdown VM
+          ansible.builtin.command:
+            cmd: VBoxManage controlvm {{ packer_image }} poweroff
+          become: false
+          failed_when: false
+
+        - name: Delete VM
+          ansible.builtin.command:
+            cmd: VBoxManage unregistervm {{ packer_image }} --delete
+          become: false
+          failed_when: false
+
+        - name: Delete existing build directories
+          ansible.builtin.file:
+            path: "{{ item }}"
+            state: absent
+          loop:
+            - "{{ packer_build_path }}"
+            - "{{ ansible_facts['user_dir'] }}/VirtualBox VMs/{{ packer_image }}"
+
+
+- name: Delete existing build directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ packer_build_path }}"
 
 - name: Create build location
   ansible.builtin.file:

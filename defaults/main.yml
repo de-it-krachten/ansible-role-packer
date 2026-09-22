@@ -35,3 +35,6 @@ packer_vm_destroy: true
 
 # Virtual environment with the required ansible version
 # packer_ansible_venv: /usr/local/venv/ansiblecore216
+
+# Hypervisor to use
+packer_hypervisor: virtualbox
