@@ -185,6 +185,8 @@
   environment:
     VCENTER_USERNAME: "{{ vcenter_username | default('dummy') }}"
     VCENTER_PASSWORD: "{{ vcenter_password | default('dummy') }}"
+    ANSIBLE_USERNAME: "{{ ansible_username | default('dummy') }}"
+    ANSIBLE_PASSWORD: "{{ ansible_password | default('dummy') }}"
 
 - name: Retrieve logs
   ansible.builtin.command:
