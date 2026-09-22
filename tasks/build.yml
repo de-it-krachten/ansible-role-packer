@@ -182,6 +182,9 @@
     executable: /bin/bash
   changed_when: true
   register: __packer
+  environment:
+    VCENTER_USERNAME: "{{ vcenter_username | default('dummy') }}"
+    VCENTER_PASSWORD: "{{ vcenter_password | default('dummy') }}"
 
 - name: Retrieve logs
   ansible.builtin.command:
