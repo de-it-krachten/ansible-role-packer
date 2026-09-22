@@ -168,6 +168,7 @@
         src: /tmp/ks-{{ packer_image }}.cfg
         dest: "{{ packer_build_path }}/ks.cfg"
         mode: "0644"
+        remote_src: true
 
 - name: Copy extra files (Ubuntu)
   when: packer_image is search('ubuntu')
@@ -177,6 +178,7 @@
         src: /tmp/user-data.{{ packer_image }}
         dest: "{{ packer_build_path }}/user-data"
         mode: "0644"
+        remote_src: true
 
     - name: Create empty meta-data file (Ubuntu)
       ansible.builtin.file:
