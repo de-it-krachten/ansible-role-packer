@@ -198,7 +198,7 @@
   community.general.ansible_galaxy_install:
     type: collection
     requirements_file: "{{ packer_build_path }}/ansible/collections/requirements.yml"
-    executable: "{{ packer_ansible_venv | default(omit) }}"
+    executable: "{{ (packer_ansible_venv ~ '/bin/ansible-galaxy') if packer_ansible_venv is defined else omit }}"
     force: true
   when: __collections_requirements.stat.exists
 
@@ -212,7 +212,7 @@
     type: role
     requirements_file: "{{ packer_build_path }}/ansible/roles/requirements.yml"
     dest: "{{ packer_build_path }}/ansible/roles/"
-    executable: "{{ packer_ansible_venv | default(omit) }}"
+    executable: "{{ (packer_ansible_venv ~ '/bin/ansible-galaxy') if packer_ansible_venv is defined else omit }}"
     force: true
   when: __roles_requirements.stat.exists
 
