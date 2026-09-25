@@ -242,7 +242,7 @@
 
 - name: Retrieve logs
   ansible.builtin.command:
-    cmd: cat {{ packer_build_path }}/{{ packer_image }}.log
+    cmd: sed -r 's/\x1B\[[0-9;]*m//g' {{ packer_build_path }}/{{ packer_image }}.log
     chdir: "{{ packer_build_path }}"
   changed_when: false
   register: __build
