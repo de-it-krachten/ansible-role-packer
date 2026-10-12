@@ -14,6 +14,7 @@ None
 
 #### Collections
 - community.general
+- community.vmware
 
 ## Platforms
 
@@ -27,7 +28,6 @@ Supported platforms
 - OracleLinux 9
 - AlmaLinux 8
 - AlmaLinux 9
-- Debian 11 (Bullseye)
 - Debian 12 (Bookworm)
 - Ubuntu 22.04 LTS
 - Ubuntu 24.04 LTS
@@ -77,6 +77,9 @@ packer_vm_destroy: true
 
 # Virtual environment with the required ansible version
 # packer_ansible_venv: /usr/local/venv/ansiblecore216
+
+# Hypervisor to use
+packer_hypervisor: virtualbox
 </pre></code>
 
 
