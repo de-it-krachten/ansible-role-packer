@@ -4,6 +4,8 @@
   ansible.builtin.command:
     cmd: packer plugins installed
   changed_when: false
+  become: true
+  become_user: "{{ packer_plugins_user }}"
   register: __packager_plugins_installed
 
 - name: Install packer plugins
@@ -11,5 +13,7 @@
     cmd: packer plugins install {{ item }}
   register: __packer_plugin
   changed_when: true
+  become: true
+  become_user: "{{ packer_plugins_user }}"
   when: __packager_plugins_installed.stdout is not search(item)
   loop: "{{ packer_plugins }}"
