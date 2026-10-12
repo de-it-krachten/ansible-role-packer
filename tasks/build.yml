@@ -1,6 +1,6 @@
 ---
 
-- name: vSphere
+- name: vSphere  # noqa name[casing]
   when: packer_hypervisor == 'vsphere'
   block:
 
@@ -45,8 +45,11 @@
     - name: Check VM state
       ansible.builtin.shell:
         cmd: |
+          set -o pipefail
           VBoxManage showvminfo {{ packer_image }} --machinereadable | \
           awk -F= '$1=="VMState" {print $2}' | sed "s/\"//g"
+      args:
+        executable: /bin/bash
       become: false
       register: vm_info
       changed_when: false
@@ -59,6 +62,7 @@
           ansible.builtin.command:
             cmd: VBoxManage controlvm {{ packer_image }} acpipowerbutton
           become: false
+          changed_when: true
           register: vbox_shutdown
           when: vm_info.stdout != 'poweroff' and vm_info.stdout != ''
 
@@ -75,12 +79,14 @@
           ansible.builtin.command:
             cmd: VBoxManage controlvm {{ packer_image }} poweroff
           become: false
+          changed_when: true
           failed_when: false
 
         - name: Delete VM
           ansible.builtin.command:
             cmd: VBoxManage unregistervm {{ packer_image }} --delete
           become: false
+          changed_when: true
           failed_when: false
 
         - name: Delete existing build directories
@@ -190,13 +196,15 @@
   ansible.builtin.copy:
     src: "files/{{ packer_image }}/"
     dest: "{{ packer_build_path }}"
+    directory_mode: "0700"
+    mode: preserve
 
 - name: Test if collection requirements exist
   ansible.builtin.stat:
     path: "{{ packer_build_path }}/ansible/collections/requirements.yml"
   register: __collections_requirements
 
-- name: Install ansible collections
+- name: Install ansible collections  # noqa args[module]
   community.general.ansible_galaxy_install:
     type: collection
     requirements_file: "{{ packer_build_path }}/ansible/collections/requirements.yml"
@@ -209,7 +217,7 @@
     path: "{{ packer_build_path }}/ansible/roles/requirements.yml"
   register: __roles_requirements
 
-- name: Install ansible roles
+- name: Install ansible roles  # noqa args[module]
   community.general.ansible_galaxy_install:
     type: role
     requirements_file: "{{ packer_build_path }}/ansible/roles/requirements.yml"
@@ -221,7 +229,7 @@
 - name: Execute packer
   ansible.builtin.shell:
     cmd: |
-      set -e
+      set -eo pipefail
       export VBOX_USER_HOME="{{ packer_build_path }}/vm"
       packer_config="{{ packer_image }}.json"
       packer_log="{{ packer_image }}.log"
@@ -241,15 +249,14 @@
     ANSIBLE_PASSWORD: "{{ ansible_password | default('dummy') }}"
 
 - name: Retrieve logs
-  ansible.builtin.command:
-    cmd: sed -r 's/\x1B\[[0-9;]*m//g' {{ packer_build_path }}/{{ packer_image }}.log
-    chdir: "{{ packer_build_path }}"
-  changed_when: false
-  register: __build
+  ansible.builtin.set_fact:
+    _log: >-
+      {{ lookup('file', packer_build_path ~ '/' ~ packer_image ~ '.log')
+       | regex_replace('\x1b\[[0-9;]*m', '') }}
 
 - name: Display logs
   ansible.builtin.debug:
-    msg: "{{ __build.stdout_lines }}"
+    msg: "{{ _log.split('\n') }}"
 
 - name: See detailed logging on the build server
   ansible.builtin.debug:
