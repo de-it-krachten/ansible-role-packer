@@ -1,3 +1,22 @@
+# [1.2.0](https://github.com/de-it-krachten/ansible-role-packer/compare/v1.1.0...v1.2.0) (2026-10-30)
+
+
+### Bug Fixes
+
+* Add ansible credentials as environment variables ([a23d664](https://github.com/de-it-krachten/ansible-role-packer/commit/a23d664faa72662922af31b9950bac00ce8c593d))
+* Add vcenter credentials as environment variables ([4dfc033](https://github.com/de-it-krachten/ansible-role-packer/commit/4dfc0331ff01f6b7070a2c026db26b3eb620bc88))
+* custom files are already on remote host ([b665808](https://github.com/de-it-krachten/ansible-role-packer/commit/b6658087c8b030b04a47e7ace5a6d59c984d10d4))
+* Make it possible to install plugins for a specific user ([9f322e5](https://github.com/de-it-krachten/ansible-role-packer/commit/9f322e5bc76fa3536bcb4a59736111f71b2054db))
+* Remove ANSI colors from log before displaying ([8a4b31a](https://github.com/de-it-krachten/ansible-role-packer/commit/8a4b31a9e2cecb44f837124e9f458651e8087bf9))
+* set correct path to ansible-galaxy ([172747b](https://github.com/de-it-krachten/ansible-role-packer/commit/172747b95763cac31cc69a2db489eb2606463ff6))
+
+
+### Features
+
+* Add support for ansible provisioner ([58183d2](https://github.com/de-it-krachten/ansible-role-packer/commit/58183d2baacec10c1113dd1cbd6f02940f2d3d97))
+* Add support for vpshere-iso ([a207dce](https://github.com/de-it-krachten/ansible-role-packer/commit/a207dce943bd9fdab798b4d449f8029ea9e2f40c))
+* Add virtualbox VM management (delete/shutdown) ([d42a995](https://github.com/de-it-krachten/ansible-role-packer/commit/d42a9950c049913310363a4d0d9af1d2404dd985))
+
 # [1.1.0](https://github.com/de-it-krachten/ansible-role-packer/compare/v1.0.0...v1.1.0) (2026-07-26)
 
 
