@@ -1,9 +1,109 @@
 ---
 
-- name: Delete existing build directory
+- name: vSphere  # noqa name[casing]
+  when: packer_hypervisor == 'vsphere'
+  block:
+
+    - name: Get VMs
+      community.vmware.vmware_vm_info:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: false
+      register: vm_list
+
+    - name: Set fact
+      ansible.builtin.set_fact:
+        found_vm: "{{ vm_list.virtual_machines | selectattr('guest_name', 'equalto', packer_image) | list }}"
+
+    - name: Graceful shutdown if powered on
+      community.vmware.vmware_guest_powerstate:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: false
+        name: "{{ packer_image }}"
+        state: shutdown-guest
+        state_change_timeout: 120
+      when: found_vm | length > 0 and found_vm[0].power_state == 'poweredOn'
+
+    - name: Delete VM
+      community.vmware.vmware_guest:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: false
+        name: "{{ packer_image }}"
+        state: absent
+        force: true
+      when: found_vm | length > 0
+
+- name: Virtualbox
+  when: packer_hypervisor == 'virtualbox'
+  block:
+
+    - name: Check VM state
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail
+          VBoxManage showvminfo {{ packer_image }} --machinereadable | \
+          awk -F= '$1=="VMState" {print $2}' | sed "s/\"//g"
+      args:
+        executable: /bin/bash
+      become: false
+      register: vm_info
+      changed_when: false
+
+    - name: Shutdown VM
+      when: not packer_vm_destroy | bool
+      block:
+
+        - name: Shutdown VM
+          ansible.builtin.command:
+            cmd: VBoxManage controlvm {{ packer_image }} acpipowerbutton
+          become: false
+          changed_when: true
+          register: vbox_shutdown
+          when: vm_info.stdout != 'poweroff' and vm_info.stdout != ''
+
+        - name: Wait for shutdown
+          ansible.builtin.pause:
+            seconds: 10
+          when: vm_info.stdout != 'poweroff' and vm_info.stdout != ''
+
+    - name: Delete VM
+      when: packer_vm_destroy | bool
+      block:
+
+        - name: Shutdown VM
+          ansible.builtin.command:
+            cmd: VBoxManage controlvm {{ packer_image }} poweroff
+          become: false
+          changed_when: true
+          failed_when: false
+
+        - name: Delete VM
+          ansible.builtin.command:
+            cmd: VBoxManage unregistervm {{ packer_image }} --delete
+          become: false
+          changed_when: true
+          failed_when: false
+
+        - name: Delete existing build directories
+          ansible.builtin.file:
+            path: "{{ item }}"
+            state: absent
+          loop:
+            - "{{ packer_build_path }}"
+            - "{{ ansible_facts['user_dir'] }}/VirtualBox VMs/{{ packer_image }}"
+
+
+- name: Delete existing build directories
   ansible.builtin.file:
-    path: "{{ packer_build_path }}"
+    path: "{{ item }}"
     state: absent
+  loop:
+    - "{{ packer_build_path }}"
 
 - name: Create build location
   ansible.builtin.file:
@@ -66,51 +166,97 @@
         - /tmp/{{ packer_image }}.json
 
 - name: Copy extra files (RHEL)
-  ansible.builtin.copy:
-    src: /tmp/ks-{{ packer_image }}.cfg
-    dest: "{{ packer_build_path }}/ks.cfg"
-    mode: "0644"
   when: packer_image is search('rhel')
+  block:
+
+    - name: Copy kickstart file
+      ansible.builtin.copy:
+        src: /tmp/ks-{{ packer_image }}.cfg
+        dest: "{{ packer_build_path }}/ks.cfg"
+        mode: "0644"
+        remote_src: true
 
 - name: Copy extra files (Ubuntu)
-  ansible.builtin.copy:
-    src: /tmp/user-data.{{ packer_image }}
-    dest: "{{ packer_build_path }}/user-data"
-    mode: "0644"
   when: packer_image is search('ubuntu')
+  block:
+    - name: Copy user-data
+      ansible.builtin.copy:
+        src: /tmp/user-data.{{ packer_image }}
+        dest: "{{ packer_build_path }}/user-data"
+        mode: "0644"
+        remote_src: true
 
-- name: Create empty meta-data file (Ubuntu)
-  ansible.builtin.file:
-    path: "{{ packer_build_path }}/meta-data"
-    state: touch
-    mode: "0644"
-  when: packer_image is search('ubuntu')
+    - name: Create empty meta-data file (Ubuntu)
+      ansible.builtin.file:
+        path: "{{ packer_build_path }}/meta-data"
+        state: touch
+        mode: "0644"
+
+- name: Copy ansible code
+  ansible.builtin.copy:
+    src: "files/{{ packer_image }}/"
+    dest: "{{ packer_build_path }}"
+    directory_mode: "0700"
+    mode: preserve
+
+- name: Test if collection requirements exist
+  ansible.builtin.stat:
+    path: "{{ packer_build_path }}/ansible/collections/requirements.yml"
+  register: __collections_requirements
+
+- name: Install ansible collections  # noqa args[module]
+  community.general.ansible_galaxy_install:
+    type: collection
+    requirements_file: "{{ packer_build_path }}/ansible/collections/requirements.yml"
+    executable: "{{ (packer_ansible_venv ~ '/bin/ansible-galaxy') if packer_ansible_venv is defined else omit }}"
+    force: true
+  when: __collections_requirements.stat.exists
+
+- name: Test if roles requirements exist
+  ansible.builtin.stat:
+    path: "{{ packer_build_path }}/ansible/roles/requirements.yml"
+  register: __roles_requirements
+
+- name: Install ansible roles  # noqa args[module]
+  community.general.ansible_galaxy_install:
+    type: role
+    requirements_file: "{{ packer_build_path }}/ansible/roles/requirements.yml"
+    dest: "{{ packer_build_path }}/ansible/roles/"
+    executable: "{{ (packer_ansible_venv ~ '/bin/ansible-galaxy') if packer_ansible_venv is defined else omit }}"
+    force: true
+  when: __roles_requirements.stat.exists
 
 - name: Execute packer
   ansible.builtin.shell:
     cmd: |
-      set -e
+      set -eo pipefail
       export VBOX_USER_HOME="{{ packer_build_path }}/vm"
       packer_config="{{ packer_image }}.json"
       packer_log="{{ packer_image }}.log"
-      # PACKER_LOG=1 packer build -on-error=abort $packer_config > $packer_log 2>&1
-      packer build -on-error=abort $packer_config > $packer_log 2>&1
+      packer_venv="{{ packer_ansible_venv | default('') }}"
+      [[ -n $packer_venv ]] && source $packer_venv/bin/activate
+      # PACKER_LOG=1 packer build -on-error=abort $packer_config 2>&1 | tee $packer_log
+      packer build -on-error=abort $packer_config 2>&1 | tee $packer_log
   args:
     chdir: "{{ packer_build_path }}"
     executable: /bin/bash
   changed_when: true
   register: __packer
+  environment:
+    VCENTER_USERNAME: "{{ vcenter_username | default('dummy') }}"
+    VCENTER_PASSWORD: "{{ vcenter_password | default('dummy') }}"
+    ANSIBLE_USERNAME: "{{ ansible_username | default('dummy') }}"
+    ANSIBLE_PASSWORD: "{{ ansible_password | default('dummy') }}"
 
 - name: Retrieve logs
-  ansible.builtin.command:
-    cmd: cat {{ packer_build_path }}/{{ packer_image }}.log
-    chdir: "{{ packer_build_path }}"
-  changed_when: false
-  register: __build
+  ansible.builtin.set_fact:
+    _log: >-
+      {{ lookup('file', packer_build_path ~ '/' ~ packer_image ~ '.log')
+       | regex_replace('\x1b\[[0-9;]*m', '') }}
 
 - name: Display logs
   ansible.builtin.debug:
-    msg: "{{ __build.stdout_lines }}"
+    msg: "{{ _log.split('\n') }}"
 
 - name: See detailed logging on the build server
   ansible.builtin.debug:
